@@ -1,10 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
+
+	<Import Project="Environment.props" />
+
+	<PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net48</TargetFramework>
-    <RootNamespace>JotunnModStub</RootNamespace>
-    <AssemblyName>JotunnModStub</AssemblyName>
+    <RootNamespace>SkillFloors</RootNamespace>
+    <AssemblyName>SkillFloors</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <LangVersion>10</LangVersion>
@@ -17,17 +20,29 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SkillFloors_Patch_UI.cs" />
+    <Compile Remove="SkillFloors_SaveLoad.cs" />
+    <Compile Remove="SkillFloors_SaveLoad_SJDN.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Jotunn">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\Jotunn\plugins\Jotunn.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\ValheimModding-JsonDotNET\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -44,12 +59,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JotunnLib" Version="2.24.3" />
+    <PackageReference Include="JotunnLib" Version="2.26.0" />
   </ItemGroup>
 
   <PropertyGroup>
     <VALHEIM_MANAGED>$(VALHEIM_INSTALL)/valheim_Data/Managed</VALHEIM_MANAGED>
-    <UNITY_FOLDER>$(SolutionDir)JotunnModStubUnity</UNITY_FOLDER>
+    <UNITY_FOLDER>$(SolutionDir)SkillFloorsUnity</UNITY_FOLDER>
   </PropertyGroup>
 
   <Target Name="CopyToUnity">
@@ -62,7 +77,7 @@
     <Copy SourceFiles="$(TargetDir)Jotunn.dll" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
-    <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll.mdb" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" Condition="Exists('$(TargetDir)$(TargetName).dll.mdb')" />
     <Copy SourceFiles="$(VALHEIM_MANAGED)/Assembly-CSharp.dll" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
     <Copy SourceFiles="$(VALHEIM_MANAGED)/assembly_valheim.dll" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
     <Copy SourceFiles="$(VALHEIM_MANAGED)/assembly_utils.dll" DestinationFolder="$(UNITY_FOLDER)/Assets/Assemblies" />
