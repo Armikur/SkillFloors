@@ -18,15 +18,14 @@ namespace SkillFloors
         public const string PluginName = "SkillFloors";
         internal const string PluginAuthor = "Armikur";
         public const string PluginGUID = $"{PluginAuthor}.mod.Valheim.{PluginName}";
-        public const string PluginVersion = "0.0.4";
+        public const string PluginVersion = "0.0.5";
 
         private readonly Harmony HarmonyInstance = new Harmony(PluginGUID);
-
 
         private void Awake()
         {
             // Jotunn comes with its own Logger class to provide a consistent Log style for all mods using it
-            Jotunn.Logger.LogInfo("SkillFloors has landed");
+            Jotunn.Logger.LogInfo("Armikur's SkillFloors mod " + PluginVersion + " has loaded!");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
@@ -48,7 +47,7 @@ namespace SkillFloors
             SkillFloors_SkillFloorData floorData = SkillFloors_SkillFloorDictionary[type];
 
             // reduce floor skill XP gain by % of regular skill XP gain
-            float floorXPGainRate = 0.25f;
+            float floorXPGainRate = 0.15f;
             float floorXPGained = xpGained * floorXPGainRate;
             floorData.SkillFloors_Floor_XPProgress += floorXPGained;
 
@@ -58,10 +57,14 @@ namespace SkillFloors
             {
                 floorData.SkillFloors_Floor_Level += 1f;
                 floorData.SkillFloors_Floor_XPProgress = 0f;
-                Debug.Log($"[SkillFloor] ---- {type} floor level increased to {floorData.SkillFloors_Floor_Level} ----");
+                Jotunn.Logger.LogInfo($"[SkillFloor] ---- {type} floor level increased to {floorData.SkillFloors_Floor_Level} ----");
             }
 
-            Debug.Log($"[SkillFloor] {type} floor level: {floorData.SkillFloors_Floor_Level}, XP: {floorData.SkillFloors_Floor_XPProgress}/{requiredXP}");
+            float skillLevel = skill.m_level;
+            float skillProgress = skill.m_accumulator;
+            float skillRequiredXP = skill.GetNextLevelRequirement();
+
+            Jotunn.Logger.LogInfo($"[SkillFloor] {type} Floor: {floorData.SkillFloors_Floor_Level} ({floorData.SkillFloors_Floor_XPProgress}/{requiredXP} | Skill: {skillLevel} ({skillProgress}/{skillRequiredXP})");
         }
 
         public static float SkillFloors_GetSkillFloor(Skills.SkillType type)
@@ -86,7 +89,11 @@ namespace SkillFloors
     {
         static void Postfix(Skills.Skill __instance, float factor)
         {
-            SkillFloors.SkillFloors_GainFloorXP(__instance, factor);
+            float baseStep = __instance.m_info.m_increseStep;
+            float globalRate = Game.m_skillGainRate;
+            float actualXPGained = baseStep * factor * globalRate;
+
+            SkillFloors.SkillFloors_GainFloorXP(__instance, actualXPGained);
         }
     }
 }

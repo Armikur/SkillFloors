@@ -1,11 +1,11 @@
 ﻿{
   "name": "SkillFloors",
   "description": "Adds a minimum skill floor to Valheim skills.",
-  "version_number": "0.0.4",
+  "version_number": "0.1.0",
   "website_url": "https://github.com/Armikur/SkillFloors",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2202",
     "ValheimModding-Jotunn-2.26.0",
-    "ValheimModding-JsonDotNET-13.0.4"
+    "ValheimModding-JsonDotNET-13.0.4-"
   ]
 }
