@@ -1,4 +1,4 @@
-﻿# SkillFloors -- NOT YET WORKING!
+﻿# SkillFloors
 SkillFloors is a Valheim Mod which creates a minimum skill level for each skill (the skill's "floor"). When you lose skill levels due to death, skill levels won't drop below their skill floors.
 
 The skill floors start at level 0 and level up at 20% the rate of the skill's level.

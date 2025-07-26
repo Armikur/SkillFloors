@@ -1,24 +1,21 @@
-﻿# SkillFloors -- NOT YET WORKING!
-SkillFloors is (will be!) a Valheim Mod which creates a minimum skill level for each skill (the skill's "floor"). When you lose skill levels due to deaths, skill levels won't drop below their skill floors.
+﻿# SkillFloors
+SkillFloors is a Valheim Mod which creates a minimum skill level for each skill (the skill's "floor"). When you lose skill levels due to death, skill levels won't drop below their skill floors.
 
-The skill floors start at level 0 and level up at 25% the rate of the skill's level.
-
-This mod doesn't really work yet.
+The skill floors start at level 0 and level up at 20% the rate of the skill's level.
 
 ## Installation (manual)
-Install with r2modman.
+Use r2modman.
 
 ## Features
-(i.e. what works!)
-- Tracking skill floor levels and XP
-- Save and Load skill floor levels between sessions
+- Slowly levels up a skill "floor" level for each skill.
+- prevents skill levels from dropping below the floor on death
 
-## ToDo
-- Actually do its job and prevent skill levels from dropping below the floor on death
-- - Show Skill Floors in the skill panel
+## To(maybe)Do
+- configuratable progress rate
+- console commands
 
 ## Changelog
-
+1.0.0 - first working release!
 
 ## Known issues
-You can find the github at: https://github.com/Armikur/SkillFloors
+You can find the github at: https://github.com/Armikur/SkillFloors_Jotunn
