@@ -34,6 +34,7 @@
     <Compile Remove="SkillFloors_Patch_UI.cs" />
     <Compile Remove="SkillFloors_SaveLoad.cs" />
     <Compile Remove="SkillFloors_SaveLoad_SJDN.cs" />
+    <Compile Remove="SkillFloors_Testing.cs" />
   </ItemGroup>
 
   <ItemGroup>
