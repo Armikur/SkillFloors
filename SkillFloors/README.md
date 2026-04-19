@@ -21,15 +21,6 @@ If you're familiar with manually installing mods, go for it! Download the zip, a
 * console commands
 * Sound and Visuals when a skill floor levels up
 
-## Changelog
-| Version | Notes
-| ------- | ----- |
-| 1.1.3 | <ul><li>fixed an issue where new characters could inherit other characters' SkillFloor levels</li><li>SkillFloors cannot be higher than their associated skill and won't gain XP if the floor and skill are the same level.</li></ul>
-| 1.1.2 | <ul><li>added secondary progress bar to Skills panel</li><li>added configurable progress rate</li><li>can now toggle extra debug messages in BepInEx window</li><li>added BepInEx Configuration Manager support for config settings</li><li>added server sync (hopefully working!)</li></ul>
-| 1.0.2 | <ul><li>other last minute tweaks and readme corrections</li></ul>
-| 1.0.1 | <ul><li>fewer debug messages</li></ul>
-| 1.0.0 | <ul><li>first working release!</li></ul>
-
 ## Known issues
 * The skill floor progress bar might disappear sometimes. This does not affect the actual skill floor's level progress, only the bar's display on the skills list.
 

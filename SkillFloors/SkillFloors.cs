@@ -126,6 +126,11 @@ namespace SkillFloors
         public float Level = 0f;
         public float XP = 0f;
     }
+    public class JSONFloorValuesReference
+    {
+        public float SkillFloors_Floor_Level = 0f;
+        public float SkillFloors_Floor_XPProgress = 0f;
+    }
 
     /* --------------------------- ON SKILL RAISED ----------------------------------- */
     [HarmonyPatch(typeof(Skills.Skill), nameof(Skills.Skill.Raise))]
@@ -223,38 +228,7 @@ namespace SkillFloors
     }
 
     /* --------------------------- SAVE AND LOAD LOGIC ----------------------------------- */
-    /*
-    public static class SaveData_Old
-    {
-        private const string SaveDataKey = "SkillFloors_SkillFloorData_JSON";
-
-        public static void Save_Floors(Player player)
-        {
-            var settings = new JsonSerializerSettings
-            {
-                Converters = new List<JsonConverter> { new StringEnumConverter() },
-                Formatting = Formatting.None
-            };
-
-            string json = JsonConvert.SerializeObject(SkillFloors.Floors_Book, settings);
-            player.m_customData[SaveDataKey] = json;
-        }
-
-        public static void Load_Floors(Player player)
-        {
-            if (!player.m_customData.TryGetValue(SaveDataKey, out string json)) return;
-
-            var settings = new JsonSerializerSettings { Converters = new List<JsonConverter> { new StringEnumConverter() } };
-
-            var deserialized = JsonConvert.DeserializeObject<Dictionary<Skills.SkillType, FloorValues>>(json, settings);
-            if (deserialized != null)
-            {
-                SkillFloors.Floors_Book = deserialized;
-            }
-        }
-    }
-    */
-    public static class SaveData
+       public static class SaveData
     {
         private const string SaveDataKey = "SkillFloors_Data"; // now a ZPKG
         private const string SaveDataKey_OLDJSON = "SkillFloors_SkillFloorData_JSON"; // old version. remove JSON support in next major release.
@@ -278,15 +252,18 @@ namespace SkillFloors
 
             player.m_customData[SaveDataKey] = pkg.GetBase64();
             Jotunn.Logger.LogInfo("[SkillFloors] Saved floors data.");
+            if (SkillFloors.Config_Debug.Value) Log_Book(SkillFloors.Floors_Book); //log it
         }
 
         public static void Load_Floors(Player player)
         {
             if (player == null) return;
 
-            // Use Z Package (new system) if there...
+            // Use Z Package if exists...
+            if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Attempting to load Floors (ZPackage)");
             if (player.m_customData.TryGetValue(SaveDataKey, out string base64))
             {
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] ZPackage found.");
                 ZPackage pkg = new ZPackage(base64);
 
                 int version = pkg.ReadInt();
@@ -312,50 +289,76 @@ namespace SkillFloors
                         XP = xp
                     };
                 }
-                Jotunn.Logger.LogInfo("[SkillFloors] Loaded floors data");
+                Jotunn.Logger.LogWarning("[SkillFloors] Loaded floors data");
+                if (SkillFloors.Config_Debug.Value) Log_Book(SkillFloors.Floors_Book); //log it
                 return;
             }
 
             // No? Try JSON (migrate)
-            if (MigrateFromJsonSave(player)) return;
+            Jotunn.Logger.LogWarning("[SkillFloors] No ZPackage, trying JSON (old) system.");
+            if (Load_Floors_OLDJSON(player)) return;
 
             // Still no?
-            Jotunn.Logger.LogInfo("[SkillFloors] No floors data found");
+            Jotunn.Logger.LogInfo("[SkillFloors] No floors data found. (Normal for new characters or first use of SkillFloors)");
             SkillFloors.Floors_Book.Clear();
         }
 
-        private static bool MigrateFromJsonSave(Player player)
+        private static bool Load_Floors_OLDJSON(Player player)
         {
-            if (!player.m_customData.TryGetValue(SaveDataKey_OLDJSON, out string json)) return false;
+            if (!player.m_customData.TryGetValue(SaveDataKey_OLDJSON, out string json))
+            {
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Tried to load from JSON data but found none.");
+                return false;
+            }
 
+            if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Found JSON data.");
             try
             {
                 var settings = new JsonSerializerSettings { Converters = new List<JsonConverter> { new StringEnumConverter() } };
+                var oldJsonData = JsonConvert.DeserializeObject<Dictionary<Skills.SkillType, JSONFloorValuesReference>>(json, settings);
 
-                var oldJsonData = JsonConvert.DeserializeObject<Dictionary<Skills.SkillType, FloorValues>>(json, settings);
+                if (oldJsonData == null || oldJsonData.Count == 0)
+                {
+                    Jotunn.Logger.LogWarning("[SkillFloors] JSON data was empty. Aborting JSON load.");
+                    return false;
+                }
 
-                if (oldJsonData == null || oldJsonData.Count == 0) return false;
-
-                SkillFloors.Floors_Book.Clear();
-
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning($"[SkillFloors] JSON save has entries: {oldJsonData?.Count ?? -1}");
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning($"[SkillFloors] JSON: \n {json}");
+                SkillFloors.Floors_Book.Clear(); // clear the book just in case
+                Jotunn.Logger.LogWarning("[SkillFloors] Building new book...");
+                // load to book
                 foreach (var kvp in oldJsonData)
                 {
                     SkillFloors.Floors_Book[kvp.Key] = new FloorValues
                     {
-                        Level = kvp.Value.Level,
-                        XP = kvp.Value.XP
+                        Level = kvp.Value.SkillFloors_Floor_Level,
+                        XP = kvp.Value.SkillFloors_Floor_XPProgress
                     };
                 }
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Book populated:");
+                Log_Book(SkillFloors.Floors_Book); //log it
 
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Saving in new ZPackage system.");
                 Save_Floors(player); // save in new format
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Removing old JSON Data.");
                 player.m_customData.Remove(SaveDataKey_OLDJSON); // kill old json data
-                Jotunn.Logger.LogInfo("[SkillFloors] Data migrated from JSON to ZPackage");
+                Jotunn.Logger.LogWarning("[SkillFloors] Data migrated from JSON to ZPackage. Old JSON Data removed.");
                 return true;
             }
             catch (Exception ex)
             { 
-                Jotunn.Logger.LogError($"[SkillFloors] JSON migration failed:\n {ex}");
+                Jotunn.Logger.LogError($"[SkillFloors] JSON migration failed:\n{ex}");
                 return false;
+            }
+        }
+
+        private static void Log_Book(Dictionary<Skills.SkillType, FloorValues> data)
+        {
+            Jotunn.Logger.LogWarning("[SkillFloors] Current Floors Book:");
+            foreach(var kvp in data)
+            {
+                Jotunn.Logger.LogInfo($"[SkillFloors] Skill: {kvp.Key}, Floor Level: {kvp.Value.Level}, XP: {kvp.Value.XP}");
             }
         }
     }
@@ -375,13 +378,15 @@ namespace SkillFloors
         static void Prefix() // reset book before loading
         { 
             SkillFloors.ResetFloorsBook();
-            SkillFloors.IsReady = false;
         }
         static void Postfix(Player __instance)
         {
+            if (__instance == null || Player.m_localPlayer != __instance)
+            {
+                if (SkillFloors.Config_Debug.Value) Jotunn.Logger.LogWarning("[SkillFloors] Skipped load calls during menu/preview");
+                return;
+            }
             SaveData.Load_Floors(__instance);
-            // SkillFloors.InitFloors(__instance);
-            SkillFloors.IsReady = true;
         }
     }
 }
