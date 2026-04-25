@@ -9,7 +9,6 @@ using Jotunn.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
@@ -26,9 +25,8 @@ namespace SkillFloors
     internal class SkillFloors : BaseUnityPlugin
     {
         public const string PluginName = "SkillFloors";
-        internal const string PluginAuthor = "Armikur";
-        public const string PluginGUID = $"{PluginAuthor}.mod.Valheim.{PluginName}";
-        public const string PluginVersion = "1.1.3";
+        public const string PluginGUID = $"Armikur.mod.Valheim.{PluginName}";
+        public const string PluginVersion = "1.1.5";
 
         // Harmony
         private readonly Harmony HarmonyInstance = new Harmony(PluginGUID);
@@ -39,9 +37,9 @@ namespace SkillFloors
 
         private void Awake()
         {
-            // load configs
+            // load configuration
             CreateConfigValues();
-            SFLog.Info(PluginAuthor + "'s " + PluginName + " mod " + PluginVersion + " has loaded!"); // always logged
+            SFLog.Info("Armikur's " + PluginName + " mod " + PluginVersion + " has loaded!"); // always logged
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             HarmonyInstance.PatchAll(assembly);
@@ -56,7 +54,6 @@ namespace SkillFloors
 
         // ------------------------------- MAIN CODE -------------------------------
         // NOTE: Skill Floors are prefixed "floor" and skills are prefixed "skill"
-        internal static bool IsReady = false; // is SkillFloors ready?
         internal static bool BookIsLoaded = false; // have we alreawdy loaded scene?)
         public static Dictionary<Skills.SkillType, FloorValues> Floors_Book = new(); // Dictionary<Skills.SkillType, FloorValues>(); // this Dictionary stores SkillFloors' data (skill, (skill level, xp progress) )
 
@@ -137,7 +134,7 @@ namespace SkillFloors
 
     /* --------------------------- ON SKILL RAISED ----------------------------------- */
     [HarmonyPatch(typeof(Skills.Skill), nameof(Skills.Skill.Raise))]
-    public class Patch_SkillFloor_Raise
+    public class Patch_SkillFloor_Raise // raise skill floors
     {
         static void Postfix(Skills.Skill __instance, float factor)
         {
@@ -172,7 +169,7 @@ namespace SkillFloors
 
     /* --------------------------- SKILLS PANEL GUI ----------------------------------- */
     [HarmonyPatch(typeof(SkillsDialog), "Setup")]
-    public class Patch_SkillsDialog
+    public class Patch_SkillsDialog // update GUI
     {
         static void Postfix(SkillsDialog __instance, Player player)
         {
@@ -236,7 +233,7 @@ namespace SkillFloors
 
         public static void Save_Floors(Player player) // save Floors_Book to ZPackage
         {
-            // NOTE: This method currently is only called from Patch_Player_Save, meaning it's already been checked for null/local/in-world player
+            // NOTE: This method is currently only called from Patch_Player_Save, meaning it's already been checked for null/local/in-world player
             ZPackage pkg = new ZPackage();
 
             pkg.Write(SaveVersion);
@@ -256,8 +253,9 @@ namespace SkillFloors
 
         public static void Load_Floors(Player player) // load Floors_Book from ZPackage or old JSON if present. Clear book if neither exist.
         {
-            // NOTE: This method is currently only ever called from Patch_Player_Load, meaning it always starts with a new empty Floors_Book.
-            if (player == null) return;
+            // NOTE: This method is currently only called from Patch_Player_Load, meaning it always starts with a new empty Floors_Book.
+            // NOTE: This method is currently only called from Patch_Player_Load, meaning it's already been checked for null/local/in-world player
+
 
             // Use Z Package if exists...
             if (player.m_customData.TryGetValue(SaveDataKey, out string base64))
@@ -371,7 +369,7 @@ namespace SkillFloors
     {
         static void Prefix(Player __instance)
         {
-            if (Player.m_localPlayer != __instance || __instance == null)
+            if (__instance == null || Player.m_localPlayer != __instance)
             {
                 if (SkillFloors.Config_Debug.Value) SFLog.Warn("skip save: non-local or null player");
                 return;
@@ -384,14 +382,14 @@ namespace SkillFloors
             SaveData.Save_Floors(__instance);
         }
     }
-
-    // We previously used Player.Load for this. Not totally convinced this is preferred but it seems to attempt fewer loads outside of play.
+    
     [HarmonyPatch(typeof(Player), nameof(Player.OnSpawned))]
     public static class Patch_Player_OnSpawned
     {
+        // We previously used Player.Load for this. Not totally convinced this is preferred but it seems to attempt fewer loads outside of play.
         static void Postfix(Player __instance)
         {
-            if (Player.m_localPlayer != __instance || __instance == null)
+            if (__instance == null || Player.m_localPlayer != __instance)
             {
                 if (SkillFloors.Config_Debug.Value) SFLog.Warn("skip load: non-local or null player");
                 return;

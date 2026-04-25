@@ -19,7 +19,7 @@ If you're familiar with manually installing mods, go for it! Download the zip, a
 
 ## To(maybe)Do
 * console commands
-* Sound and Visuals when a skill floor levels up
+* Sound effect for skill floor level up
 
 ## Known issues
 * The skill floor progress bar might disappear sometimes. This does not affect the actual skill floor's level progress, only the bar's display on the skills list.
