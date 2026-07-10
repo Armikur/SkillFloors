@@ -1,4 +1,6 @@
 # Changelog
+## 1.1.6
+* removed limiting maximum skill floor to current skill level.
 
 ## 1.1.5 (2026-04-21)
 * backend improvements, cleaner execution

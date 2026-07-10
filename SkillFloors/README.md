@@ -18,7 +18,7 @@ If you're familiar with manually installing mods, go for it! Download the zip, a
 * ServerSync for the progress rate.
 
 ## To(maybe)Do
-* console commands
+* next: remove dependency on JsonDotNET. It is only used to load old version save data, and after a few months will be removed.
 * Sound effect for skill floor level up
 
 ## Known issues

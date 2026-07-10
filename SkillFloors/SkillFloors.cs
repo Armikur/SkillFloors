@@ -26,7 +26,7 @@ namespace SkillFloors
     {
         public const string PluginName = "SkillFloors";
         public const string PluginGUID = $"Armikur.mod.Valheim.{PluginName}";
-        public const string PluginVersion = "1.1.5";
+        public const string PluginVersion = "1.1.6";
 
         // Harmony
         private readonly Harmony HarmonyInstance = new Harmony(PluginGUID);
@@ -79,6 +79,7 @@ namespace SkillFloors
             float skillReqXP = skill.GetNextLevelRequirement();
 
             // if floor >= skill, clamp and return
+            /* -- NOW DISABLED, this was originally to get around odd behaviors, but those should now be fixed.
             float skillLevelInt = Mathf.Floor(skill.m_level); // skill level, as integer
             if (floorVals.Level >= skillLevelInt)
             {
@@ -87,7 +88,7 @@ namespace SkillFloors
                 if (Config_Debug.Value) SFLog.Info($"{skillType} floor clamped at {floorVals.Level} ({floorVals.XP}/{floorReqXP}) | Skill: {skill.m_level} ({skill.m_accumulator}/{skillReqXP})");
                 return;
             }
-
+            */
             floorVals.XP += skillXPGain * Config_Rate.Value; // increase floor XP (skill rate * configed floor rate)
 
             // increase floor level if needed
