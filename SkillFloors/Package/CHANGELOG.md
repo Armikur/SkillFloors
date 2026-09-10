@@ -1,4 +1,8 @@
 # Changelog
+## 1.2.0
+* updated for Valheim 1.0
+* removed JsonDotNET code
+
 ## 1.1.6
 * removed limiting maximum skill floor to current skill level.
 

@@ -6,8 +6,6 @@ using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using Jotunn.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -78,20 +76,9 @@ namespace SkillFloors
             float floorReqXP = CalcFloorReqXP(floorVals.Level);
             float skillReqXP = skill.GetNextLevelRequirement();
 
-            // if floor >= skill, clamp and return
-            /* -- NOW DISABLED, this was originally to get around odd behaviors, but those should now be fixed.
-            float skillLevelInt = Mathf.Floor(skill.m_level); // skill level, as integer
-            if (floorVals.Level >= skillLevelInt)
-            {
-                floorVals.Level = skillLevelInt; // restrict floor level
-                floorVals.XP = 0f; // no xp gain when floor = skill
-                if (Config_Debug.Value) SFLog.Info($"{skillType} floor clamped at {floorVals.Level} ({floorVals.XP}/{floorReqXP}) | Skill: {skill.m_level} ({skill.m_accumulator}/{skillReqXP})");
-                return;
-            }
-            */
             floorVals.XP += skillXPGain * Config_Rate.Value; // increase floor XP (skill rate * configed floor rate)
 
-            // increase floor level if needed
+            // increase floor level if needed. intentionally only increases by 1 level and sets the progress back to 0 instead of using a while loop to "spend" off the XP for levels. If something grants a ton of XP, this will clamp the floor to only increase by 1 regardless.
             if (floorVals.XP >= floorReqXP)
             {
                 floorVals.Level += 1f;
@@ -127,11 +114,6 @@ namespace SkillFloors
         public float Level = 0f;
         public float XP = 0f;
     }
-    public class JSONFloorValuesReference // // initial floor level and xp (JSON reference, deprecated)
-    {
-        public float SkillFloors_Floor_Level = 0f;
-        public float SkillFloors_Floor_XPProgress = 0f;
-    }
 
     /* --------------------------- ON SKILL RAISED ----------------------------------- */
     [HarmonyPatch(typeof(Skills.Skill), nameof(Skills.Skill.Raise))]
@@ -162,7 +144,7 @@ namespace SkillFloors
                 if (skill.m_level < floorLevel)
                 {
                     skill.m_level = floorLevel;
-                    SFLog.Info($"{type} hit its SkillFloor. Holding the line (I mean floor!) at level {floorLevel}!.");
+                    SFLog.Info($"{type} hit its SkillFloor. Holding the line (I mean floor!) at level {floorLevel}!");
                 }
             }
         }
@@ -228,8 +210,7 @@ namespace SkillFloors
     public static class SaveData
         {
         private const string SaveDataKey = "SkillFloors_Data"; // now a ZPkg
-        private const string SaveDataKey_OLDJSON = "SkillFloors_SkillFloorData_JSON"; // old version. remove JSON support in next major release.
-        private const int SaveVersion = 1;
+        private const int SaveVersion = 1; // increment this if the save format changes in a way that is not backwards compatible
         public static bool IsMainScene() => SceneManager.GetActiveScene().name.Equals("main"); // in world?
 
         public static void Save_Floors(Player player) // save Floors_Book to ZPackage
@@ -248,8 +229,7 @@ namespace SkillFloors
             }
 
             player.m_customData[SaveDataKey] = pkg.GetBase64();
-            if (!SkillFloors.Config_Debug.Value) SFLog.Info("Floors data saved"); // log as info normally, or Warn if debug is on (next line)
-            Log_Book("Floors data saved");
+            Log_Book("Floors data saved"); // log info if debug on
         }
 
         public static void Load_Floors(Player player) // load Floors_Book from ZPackage or old JSON if present. Clear book if neither exist.
@@ -287,64 +267,13 @@ namespace SkillFloors
                     };
                 }
 
-                if (!SkillFloors.Config_Debug.Value) SFLog.Info("Floors data loaded"); // log info or warning (next line) if debug on
-                Log_Book("ZPackage found, Floors data loaded");
+                Log_Book("ZPackage found, Floors data loaded"); // log info if debug on
                 return;
             }
 
-            // No? Try JSON (migrate)
-            SFLog.Warn("No ZPackage found, Trying JSON (old) system instead");
-            if (Load_Floors_OLDJSON(player)) return;
-
-            // Still no?
+            // No floors data?
             // SkillFloors.Floors_Book.Clear(); -- currently redundant
             SFLog.Warn("No Floors data found (normal for first use / new characters)."); // always log
-        }
-
-        private static bool Load_Floors_OLDJSON(Player player) // load from old JSON and migrate to ZPackage or return false. Only called if there's no ZPackage in Load_Floors.
-        {
-            // NOTE: This method is currently only ever called from LoadPlayer, which is only called from Patch_Player_Load, meaning it always starts with a new empty Floors_Book.
-            if (!player.m_customData.TryGetValue(SaveDataKey_OLDJSON, out string json))
-            {
-                if (SkillFloors.Config_Debug.Value) SFLog.Warn("Tried to load from JSON data but found none.");
-                return false;
-            }
-
-            try
-            {
-                var settings = new JsonSerializerSettings { Converters = new List<JsonConverter> { new StringEnumConverter() } };
-                var oldJsonData = JsonConvert.DeserializeObject<Dictionary<Skills.SkillType, JSONFloorValuesReference>>(json, settings);
-
-                if (oldJsonData == null || oldJsonData.Count == 0)
-                {
-                    SFLog.Warn("Found JSON data, but it was empty. Aborting JSON load.");
-                    return false;
-                }
-
-                // SkillFloors.Floors_Book.Clear(); -- currently redundant
-                if (SkillFloors.Config_Debug.Value)
-                {
-                    SFLog.Warn($"JSON save has entries: {oldJsonData?.Count ?? -1}");
-                    SFLog.Warn($"JSON (raw): \n {json}");
-                }
-                foreach (var kvp in oldJsonData) // build book. for each SkillFloor, assign Values and XP from JSON data
-                {
-                    SkillFloors.Floors_Book[kvp.Key] = new FloorValues
-                    {
-                        Level = kvp.Value.SkillFloors_Floor_Level,
-                        XP = kvp.Value.SkillFloors_Floor_XPProgress
-                    };
-                }
-                Save_Floors(player); // save in new format
-                player.m_customData.Remove(SaveDataKey_OLDJSON); // kill old json data
-                SFLog.Warn("JSON migrated to ZPackage. Old JSON removed."); // always log
-                return true;
-            }
-            catch (Exception ex)
-            { 
-                SFLog.Err($"JSON migration failed:\n{ex}"); // always log
-                return false;
-            }
         }
 
         private static void Log_Book(string headerMsg = null) // log current book entries if debugging enabled.

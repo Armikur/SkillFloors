@@ -4,8 +4,8 @@ SkillFloors is a Valheim Mod which creates a minimum skill level for each skill 
 Skill floors start at level 0 and increase up at 15% the normal skill's rate. The rate is configurable.
 
 ## Installation
-# r2Modman
-I recommend using r2modman to install.
+# Gale or r2Modman
+I recommend using Gale or r2modman to install.
 
 # Manual
 If you're familiar with manually installing mods, go for it! Download the zip, and just put the SkillFloors.dll in BepInEx/plugins/SkillFloors.
@@ -17,12 +17,8 @@ If you're familiar with manually installing mods, go for it! Download the zip, a
 * configurable progress rate (available in BepInEx Configuration Manager)
 * ServerSync for the progress rate.
 
-## To(maybe)Do
-* next: remove dependency on JsonDotNET. It is only used to load old version save data, and after a few months will be removed.
-* Sound effect for skill floor level up
-
 ## Known issues
-* The skill floor progress bar might disappear sometimes. This does not affect the actual skill floor's level progress, only the bar's display on the skills list.
+* none currently
 
 ## Other / Support
 * You can find the github at: https://github.com/Armikur/SkillFloors
