@@ -1,6 +1,7 @@
 # Changelog
-## 1.2.1
+## 1.2.1 / 1.2.2
 * fixed a version number display issue (woops!)
+* fixed typos and readme formatting
 
 ## 1.2.0
 * updated for Valheim 1.0
