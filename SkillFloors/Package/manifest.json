@@ -1,10 +1,10 @@
 {
   "name": "SkillFloors",
   "description": "Adds a slowly levelable minimum skill floor to Valheim skills.",
-  "version_number": "1.2.1",
+  "version_number": "1.2.2",
   "website_url": "https://github.com/Armikur/SkillFloors",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2333",
+    "denikson-BepInExPack_Valheim-5.4.2350",
     "ValheimModding-Jotunn-2.30.0"
   ]
 }

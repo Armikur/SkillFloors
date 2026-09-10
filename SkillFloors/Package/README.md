@@ -4,10 +4,11 @@ SkillFloors is a Valheim Mod which creates a minimum skill level for each skill 
 Skill floors start at level 0 and increase up at 15% the normal skill's rate. The rate is configurable.
 
 ## Installation
-# Gale or r2Modman
-I recommend using Gale or r2modman to install.
 
-# Manual
+### Gale or r2Modman
+I recommend using Gale. Starting at version 1.2.3, it will only be hosted on Hexium (requires Gale). r2modman still works for 1.2.2 and earlier.
+
+### Manual
 If you're familiar with manually installing mods, go for it! Download the zip, and just put the SkillFloors.dll in BepInEx/plugins/SkillFloors.
 
 ## Features
