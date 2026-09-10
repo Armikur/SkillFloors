@@ -24,7 +24,7 @@ namespace SkillFloors
     {
         public const string PluginName = "SkillFloors";
         public const string PluginGUID = $"Armikur.mod.Valheim.{PluginName}";
-        public const string PluginVersion = "1.1.6";
+        public const string PluginVersion = "1.2.1";
 
         // Harmony
         private readonly Harmony HarmonyInstance = new Harmony(PluginGUID);

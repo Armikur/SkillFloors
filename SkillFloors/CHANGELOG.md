@@ -1,4 +1,7 @@
 # Changelog
+## 1.2.1
+* fixed a version number display issue (woops!)
+
 ## 1.2.0
 * updated for Valheim 1.0
 * removed JsonDotNET code
